@@ -1,0 +1,27 @@
+{
+  "name": "slackmind",
+  "version": "1.0.0",
+  "description": "An Electron app to help you keep track of your Slack reminders",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gallimorej/slackmind.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gallimorej/slackmind/issues"
+  },
+  "homepage": "https://github.com/gallimorej/slackmind#readme",
+  "devDependencies": {
+    "electron": "^28.2.0"
+  },
+  "dependencies": {
+    "@slack/web-api": "^7.0.1"
+  }
+}
