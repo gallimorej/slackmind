@@ -1,5 +1,5 @@
 // main.js
-
+const path = require('path');
 const { app, BrowserWindow } = require('electron')
 const { WebClient } = require('@slack/web-api');
 
@@ -23,6 +23,8 @@ function createWindow () {
         height: 600,
         webPreferences: {
             nodeIntegration: true,
+            preload: path.join(__dirname, 'preload.js'), // path to your preload script
+            contextIsolation: true, // recommended for security reasons
         }
     })
 
@@ -54,6 +56,58 @@ function createWindow () {
     }
   
   })();
+
+  /*
+(async () => {
+
+    web.conversations.list()
+    .then((res) => {
+        const channels = res.channels;
+
+        // Get the ul element
+        const ul = document.getElementById('channel-list');
+
+        // Create a new li element for each channel
+        channels.forEach((channel) => {
+        const li = document.createElement('li');
+        li.textContent = channel.name;
+        ul.appendChild(li);
+        });
+    })
+    //.catch(console.error);
+})();
+*/
+
+// You probably want to use a database to store any conversations information ;)
+let conversationsStore = {};
+
+async function populateConversationStore() {
+  try {
+    // Call the conversations.list method using the WebClient
+    const result = await web.conversations.list();
+
+    saveConversations(result.channels);
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+// Put conversations into the JavaScript object
+function saveConversations(conversationsArray) {
+    let conversationId = '';
+  
+    conversationsArray.forEach(function(conversation){
+        // Key conversation info on its unique ID
+        conversationId = conversation["id"];
+    
+        // Store the entire conversation object (you may not need all of the info)
+        conversationsStore[conversationId] = conversation;
+    });
+    //console.log(conversationsStore);
+}
+
+populateConversationStore();
 
   /*
   (async () => {

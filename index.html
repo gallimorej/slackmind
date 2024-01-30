@@ -1,8 +1,12 @@
 <!-- index.html -->
-
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src https://slack.com">
+  </head>
   <body>
     <h1>Hello World!</h1>
+    <ul id="channel-list"></ul>
+    <script src="./channels.js"></script>
   </body>
 </html>
