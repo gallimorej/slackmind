@@ -31,6 +31,7 @@ function createWindow () {
     win.loadFile('index.html')
 }
 
+/*
 (async () => {
 
     // Post a message to the channel, and await the result.
@@ -56,6 +57,7 @@ function createWindow () {
     }
   
   })();
+  */
 
   /*
 (async () => {

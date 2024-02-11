@@ -13,7 +13,7 @@ contextBridge.exposeInMainWorld(
       
       web.conversations.list()
       .then((res) => {
-          const channels = res.channels;
+        const channels = res.channels.sort((a, b) => a.name.localeCompare(b.name));
 
           // Get the ul element
           const channelSelect = document.getElementById('channel');
@@ -79,7 +79,7 @@ contextBridge.exposeInMainWorld(
         const twoMinutes = new Date();
         twoMinutes.setDate(twoMinutes.getDate());
         twoMinutes.setMinutes(twoMinutes.getMinutes() + 2);
-        
+
         web.chat.scheduleMessage({
           channel: channel,
           text: post,
