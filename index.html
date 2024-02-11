@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src https://slack.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://slack.com">
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -44,6 +44,13 @@
       </select>
     </div>
 
+    <!-- Label and multi-select box for "channel" -->
+    <div class="form-group">
+      <label for="message">Message:</label>
+      <select id="message" multiple>
+      </select>
+    </div>
+
     <!-- Label and multi-line input field for "post" -->
     <div class="form-group">
       <label for="post">Post:</label>
@@ -53,6 +60,11 @@
     <!-- Button labeled "Submit" -->
     <button id="submit">Submit</button> 
 
+    
+
     <script src="./channels.js"></script>
+   
+    
+    
   </body>
 </html>
