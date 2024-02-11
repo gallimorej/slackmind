@@ -16,13 +16,13 @@ contextBridge.exposeInMainWorld(
             const channels = res.channels;
 
             // Get the ul element
-            const ul = document.getElementById('channel-list');
+            const channelSelect = document.getElementById('channel');
 
             // Create a new li element for each channel
             channels.forEach((channel) => {
-            const li = document.createElement('li');
-            li.textContent = channel.name;
-            ul.appendChild(li);
+            const optionItem = document.createElement('option');
+            optionItem.textContent = channel.name;
+            channelSelect.appendChild(optionItem);
             });
         })
         

@@ -3,10 +3,56 @@
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src https://slack.com">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .form-group {
+        width: 50%;
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+      }
+      select, textarea, button {
+        width: 100%;
+        margin-top: 5px;
+      }
+      button {
+        padding: 10px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    <ul id="channel-list"></ul>
+
+    <!-- Label and multi-select box for "channel" -->
+    <div class="form-group">
+      <label for="channel">Channel:</label>
+      <select id="channel" multiple>
+      </select>
+    </div>
+
+    <!-- Label and multi-line input field for "post" -->
+    <div class="form-group">
+      <label for="post">Post:</label>
+      <textarea id="post" rows="4" cols="50"></textarea>
+    </div>
+
+    <!-- Button labeled "Submit" -->
+    <button id="submit">Submit</button> 
+
     <script src="./channels.js"></script>
   </body>
 </html>
