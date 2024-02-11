@@ -4,8 +4,8 @@ const { WebClient } = require('@slack/web-api');
 contextBridge.exposeInMainWorld(
   'myAPI', // the name of the global variable that will be available in the renderer
   {
-    doSomething: () => {
-      console.log('doing something new');
+    loadChannels: () => {
+      console.log('loading channels');
       
       // Create a new instance of the WebClient class with your token
       const web = new WebClient(process.env.SLACK_TOKEN);
@@ -21,7 +21,8 @@ contextBridge.exposeInMainWorld(
           // Create a new li element for each channel
           channels.forEach((channel) => {
             const optionItem = document.createElement('option');
-            optionItem.textContent = channel.name;
+            optionItem.value = channel.id;
+            optionItem.textContent = `${channel.name} (${channel.id})`;
             channelSelect.appendChild(optionItem);
           });
       })
@@ -48,6 +49,45 @@ contextBridge.exposeInMainWorld(
             messageSelect.appendChild(optionItem);
           });
       })
+    },
+
+    submitScheduledMessage: () => {
+      // Get the submit button
+      const submitButton = document.getElementById('submit');
+    
+      // Add an event listener to the submit button
+      submitButton.addEventListener('click', function(event) {
+        // Prevent the form from being submitted normally
+        event.preventDefault();
+    
+        // Get the values from the form
+        const channel = document.getElementById('channel').value;
+        const post = document.getElementById('post').value;
+    
+        // Call your script to submit the values
+        // Replace this with the actual function call
+        yourSubmitFunction(channel, post);
+      });
+    
+      function yourSubmitFunction(channel, post) {
+        // Your code to submit the values goes here
+        console.log(`Submitting Channel: ${channel}, Post: ${post}`);
+
+        // Create a new instance of the WebClient class with your token
+        const web = new WebClient(process.env.SLACK_TOKEN);
+
+        const twoMinutes = new Date();
+        twoMinutes.setDate(twoMinutes.getDate());
+        twoMinutes.setMinutes(twoMinutes.getMinutes() + 2);
+        
+        web.chat.scheduleMessage({
+          channel: channel,
+          text: post,
+          //post_at: twoMinutes.getTime() / 1000
+          post_at: Math.floor(twoMinutes.getTime() / 1000)
+      } );
+      }
+        
     }
   }
   

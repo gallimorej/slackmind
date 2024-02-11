@@ -1,2 +1,3 @@
-window.myAPI.doSomething();
+window.myAPI.loadChannels();
 window.myAPI.loadScheduledMessages();
+window.myAPI.submitScheduledMessage();
