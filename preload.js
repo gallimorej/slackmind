@@ -70,7 +70,6 @@ contextBridge.exposeInMainWorld(
         const scheduledAMPM = document.querySelector('input[name="scheduled_ampm"]:checked').value;
 
         const scheduledDateTime = getScheduledDateTime(scheduledDate, scheduledHour, scheduledMinute, scheduledAMPM);
-        console.log(`Scheduled Date: ${scheduledDateTime}`);
     
         // Call your script to submit the values
         // Replace this with the actual function call
@@ -89,11 +88,8 @@ contextBridge.exposeInMainWorld(
         const scheduledDateTime = new Date(date);
         // the date that gets retuned uses a zero-based day of the month
         scheduledDateTime.setDate(scheduledDateTime.getDate() + 1);
-        console.log(`Scheduled Date: ${scheduledDateTime}`);
         scheduledDateTime.setHours(hour);
-        console.log(`Scheduled Date: ${scheduledDateTime}`);
         scheduledDateTime.setMinutes(minute);
-        console.log(`Scheduled Date: ${scheduledDateTime}`);
       
         // Return the epoch time
         return scheduledDateTime;
@@ -106,18 +102,10 @@ contextBridge.exposeInMainWorld(
         // Create a new instance of the WebClient class with your token
         const web = new WebClient(process.env.SLACK_TOKEN);
 
-        //const twoMinutes = new Date();
-        //twoMinutes.setDate(twoMinutes.getDate());
-        //twoMinutes.setMinutes(twoMinutes.getMinutes() + 2);
-
-        console.log(`Scheduled Date: ${scheduledDateTime}`);
-        console.log(`Scheduled Date: ${scheduledDateTime.getTime()}`);
-
         web.chat.scheduleMessage({
           channel: channel,
           text: post,
-          //post_at: twoMinutes.getTime() / 1000
-          //post_at: Math.floor(twoMinutes.getTime() / 1000)
+          // divide by 1000 to convert to seconds
           post_at: scheduledDateTime / 1000
       } );
       }
