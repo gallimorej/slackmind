@@ -57,12 +57,21 @@
       <textarea id="post" rows="4" cols="50"></textarea>
     </div>
 
+    <!-- Label and input field for "date" -->
+    <div class="form-group">
+      <label for="scheduled_date">Scheduled Date:</label>
+      <input type="date" id="scheduled_date">
+    </div>
+
+    <!-- Label and input field for the time -->
+    <div class="form-group">
+      <label for="hour">Scheduled Time:</label>
+      <input type="number" id="scheduled_hour" min="1" max="12">:<input type="number" id="scheduled_minute" min="0" max="59"><input type="radio" id="am" name="scheduled_ampm" value="AM" checked>AM<input type="radio" id="pm" name="scheduled_ampm" value="PM">PM
+    </div>
+
     <!-- Button labeled "Submit" -->
     <button id="submit">Submit</button>
 
     <script src="./channels.js"></script>
-   
-    
-    
   </body>
 </html>
