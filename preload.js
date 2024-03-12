@@ -1,7 +1,5 @@
-const { ipcRenderer, contextBridge } = require('electron');
+const { contextBridge } = require('electron');
 const { WebClient } = require('@slack/web-api');
-
-window.ipcRenderer = ipcRenderer;
 
 contextBridge.exposeInMainWorld(
   'myAPI', // the name of the global variable that will be available in the renderer
@@ -37,51 +35,6 @@ contextBridge.exposeInMainWorld(
       
       // Create a new instance of the WebClient class with your token
       const web = new WebClient(process.env.SLACK_TOKEN);
-      
-      /*
-      web.chat.scheduledMessages.list()
-      .then((res) => {
-          const messages = res.scheduled_messages;
-
-          // Get the ul element
-          //const messageSelect = document.getElementById('message');
-          // Create a new table element
-          const messagesTableBody = document.getElementById('messages');
-
-          
-          // Create a new table row for each message
-          messages.forEach((message) => {
-            const row = document.createElement('tr');
-            
-            const cellChannel = document.createElement('td');
-            cellChannel.textContent = message.channel_id;
-            row.appendChild(cellChannel);
-
-            const cellMessage = document.createElement('td');
-            cellMessage.textContent = message.text;
-            row.appendChild(cellMessage);
-            
-            const cellScheduledDate = document.createElement('td');
-            cellScheduledDate.textContent = message.post_at;
-            row.appendChild(cellScheduledDate);
-            
-            const cellScheduledTime = document.createElement('td');
-            cellScheduledTime.textContent = message.post_at;
-            row.appendChild(cellScheduledTime);
-
-            messagesTableBody.appendChild(row);
-          });
-
-          
-
-          // Create a new li element for each message
-          //messages.forEach((message) => {
-            //const optionItem = document.createElement('option');
-            //optionItem.textContent = message.text;
-            //messageSelect.appendChild(optionItem);
-          //});
-      })
-      */
 
       return web.chat.scheduledMessages.list()
         .then((res) => {

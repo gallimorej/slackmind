@@ -20,7 +20,7 @@ twoMinutes.setMinutes(twoMinutes.getMinutes() + 2);
 function createWindow () {
     let win = new BrowserWindow({
         width: 800,
-        height: 600,
+        height: 800,
         webPreferences: {
             nodeIntegration: true,
             preload: path.join(__dirname, 'preload.js'), // path to your preload script
