@@ -31,23 +31,6 @@ function createWindow () {
     win.loadFile('index.html')
 }
 
-function getScheduledDateTime(date, hour, minute, ampm) {
-  // Convert the hour to 24-hour format if PM is selected
-  if (ampm === 'PM' && hour < 12) {
-    hour += 12;
-  } else if (ampm === 'AM' && hour === 12) {
-    hour = 0;
-  }
-
-  // Create a new Date object
-  const scheduledDate = new Date(date);
-  scheduledDate.setHours(hour);
-  scheduledDate.setMinutes(minute);
-
-  // Return the epoch time
-  return scheduledDate.getTime();
-}
-
 /*
 (async () => {
 

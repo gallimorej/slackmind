@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https://slack.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.datatables.net; style-src 'self' 'unsafe-inline' https://cdn.datatables.net; img-src 'self' https://cdn.datatables.net; connect-src https://slack.com">
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -44,13 +44,6 @@
       </select>
     </div>
 
-    <!-- Label and multi-select box for "channel" -->
-    <div class="form-group">
-      <label for="message">Message:</label>
-      <select id="message">
-      </select>
-    </div>
-
     <!-- Label and multi-line input field for "post" -->
     <div class="form-group">
       <label for="post">Post:</label>
@@ -72,6 +65,60 @@
     <!-- Button labeled "Submit" -->
     <button id="submit">Submit</button>
 
+    <!-- Label and multi-select box for "channel" -->
+    <div class="form-group">
+      <!--
+      <label for="message">Message:</label>
+      <select id="message">
+      </select>
+      -->
+      <table id="messagesTable" class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th>Message</th>
+            <th>Scheduled Date</th>
+            <th>Scheduled Time</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <!-- Table rows and cells here -->
+      </table>
+    </div>
+
     <script src="./channels.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+
+    <!-- Your custom scripts -->
+    
+    <script>
+      $(document).ready(function() {
+        // Initialize the DataTable and assign it to a property of the window object
+        var table = $('#messagesTable').DataTable();
+
+        window.myAPI.loadScheduledMessages().then((messages) => {
+          // messages is the array of scheduled messages
+          messages.forEach((message) => {
+            table.row.add([message.channel_id, message.text, message.post_at, message.post_at]).draw();
+          });
+        });
+    
+      
+        $('#messagesTable tbody').on('click', 'tr', function () {
+          var data = table.row( this ).data();
+          alert( 'You clicked on '+data[0]+'\'s row' );
+        });
+      });
+    </script>
+
+    
+    
   </body>
 </html>
