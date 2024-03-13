@@ -6,18 +6,25 @@ body {
   flex-direction: column;
   align-items: center;
 }
-.form-group {
-  width: 50%;
-  margin-bottom: 20px;
-}
 label {
   display: block;
 }
-select, textarea, button {
+select, textarea {
   width: 100%;
   margin-top: 5px;
 }
 button {
   padding: 10px;
   background-color: #007BFF;
+  display: block;
+  margin: 0 auto;
+  width: fit-content;
+}
+.form-group {
+  width: 50%;
+  margin-bottom: 20px;
+}
+.button-container {
+  display: flex;
+  justify-content: space-between;
 }

@@ -17,10 +17,12 @@
       <table id="messagesTable" class="table table-striped table-bordered">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Channel</th>
             <th>Message</th>
             <th>Scheduled Date</th>
             <th>Scheduled Time</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -29,34 +31,39 @@
       </table>
     </div>
 
-    <!-- Label and multi-select box for "channel" -->
-    <div class="form-group">
-      <label for="channel">Channel:</label>
-      <select id="channel">
-      </select>
-    </div>
+    <button id="new">New</button>
 
-    <!-- Label and multi-line input field for "post" -->
-    <div class="form-group">
-      <label for="post">Post:</label>
-      <textarea id="post" rows="4" cols="50"></textarea>
-    </div>
+    <form id="messageForm">
 
-    <!-- Label and input field for "date" -->
-    <div class="form-group">
-      <label for="scheduled_date">Scheduled Date:</label>
-      <input type="date" id="scheduled_date">
-    </div>
+      <!-- Label and multi-select box for "channel" -->
+      <div class="form-group">
+        <label for="channel">Channel:</label>
+        <select id="channel">
+        </select>
+      </div>
 
-    <!-- Label and input field for the time -->
-    <div class="form-group">
-      <label for="hour">Scheduled Time:</label>
-      <input type="number" id="scheduled_hour" min="1" max="12">:<input type="number" id="scheduled_minute" min="0" max="59"><input type="radio" id="am" name="scheduled_ampm" value="AM" checked>AM<input type="radio" id="pm" name="scheduled_ampm" value="PM">PM
-    </div>
+      <!-- Label and multi-line input field for "post" -->
+      <div class="form-group">
+        <label for="post">Post:</label>
+        <textarea id="post" rows="4" cols="50"></textarea>
+      </div>
 
-    <!-- Button labeled "Submit" -->
-    <button id="submit">Submit</button>
+      <!-- Label and input field for "date" -->
+      <div class="form-group">
+        <label for="scheduled_date">Scheduled Date:</label>
+        <input type="date" id="scheduled_date">
+      </div>
 
+      <!-- Label and input field for the time -->
+      <div class="form-group">
+        <label for="hour">Scheduled Time:</label>
+        <input type="number" id="scheduled_hour" min="1" max="12">:<input type="number" id="scheduled_minute" min="0" max="59"><input type="radio" id="am" name="scheduled_ampm" value="AM" checked>AM<input type="radio" id="pm" name="scheduled_ampm" value="PM">PM
+      </div>
+    </form>
+      <div class="button-container">
+        <button id="save">Save</button>
+        <button id="cancel">Cancel</button>
+      </div>
     
 
     <script src="./channels.js"></script>
@@ -73,18 +80,81 @@
     <script>
       $(document).ready(function() {
         // Initialize the DataTable and assign it to a property of the window object
-        var table = $('#messagesTable').DataTable();
+        var table = $('#messagesTable').DataTable({
+          columnDefs: [
+            {
+              targets: [0], // Index of the column containing the hidden value
+              visible: false,
+              searchable: false
+            }
+          ]
+        });
 
         window.myAPI.loadScheduledMessages().then((messages) => {
           // messages is the array of scheduled messages
           messages.forEach((message) => {
-            table.row.add([message.channel_id, message.text, message.post_at, message.post_at]).draw();
+            table.row.add([message.id, 
+                           message.channel_id, 
+                           message.text, 
+                           message.post_at, 
+                           message.post_at, 
+                           '<div class="button-container"><button class="update-btn" data-channel-id="' + message.channel_id + '" data-message-id="' + message.id + '">Update</button>' + 
+                           '<button class="delete-btn" data-channel-id="' + message.channel_id + '" data-message-id="' + message.id + '">Delete</button></div>']).draw();
           });
         });
     
         $('#messagesTable tbody').on('click', 'tr', function () {
           var data = table.row( this ).data();
           alert( 'You clicked on '+data[0]+'\'s row' );
+          //fill in the form with the data from the row
+          //call the fillForm method from the API
+        });
+
+        $('#messagesTable').on('click', '.update-btn', function() {
+          var row = table.row($(this).parents('tr'));
+          var data = row.data();
+        
+          $('#channel').val(data[1]); // Assuming the channel is in the first column
+          $('#post').val(data[2]); // Assuming the message is in the second column
+          $('#scheduled_date').val(data[3]); // Assuming the date is in the third column
+        
+          // Assuming the time is in the fourth column and is in the format "HH:MM AM/PM"
+          var timeParts = data[3].split(' ');
+          var hourMinuteParts = timeParts[0].split(':');
+          $('#scheduled_hour').val(hourMinuteParts[0]);
+          $('#scheduled_minute').val(hourMinuteParts[1]);
+          if (timeParts[1] === 'AM') {
+            $('#am').prop('checked', true);
+          } else {
+            $('#pm').prop('checked', true);
+          }
+        
+          //delete the message from the database
+          //call the deleteScheduledMessage method from the API
+
+          //window.myAPI.deleteScheduledMessage(channel_id, message_id);
+          //row.remove().draw();
+        });
+
+        $('#messagesTable').on('click', '.delete-btn', function() {
+          var channel_id = $(this).data('channel-id');
+          var message_id = $(this).data('message-id');
+
+          var row = table.row($(this).parents('tr'));
+          alert( 'You are deleting the message with ID: '+message_id );
+          //delete the message from the database
+          //call the deleteScheduledMessage method from the API
+
+          window.myAPI.deleteScheduledMessage(channel_id, message_id);
+          row.remove().draw();
+        });
+
+        $('#cancel').click(function() {
+          $('#messageForm')[0].reset();
+        });
+
+        $('#new').click(function() {
+          $('#messageForm')[0].reset();
         });
       });
     </script>
