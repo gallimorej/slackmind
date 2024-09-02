@@ -23,6 +23,20 @@ async function fetchScheduledMessages() {
   }
 }
 
+async function createScheduledMessage(channel, text, post_at) {
+  try {
+    await web.chat.scheduleMessage({
+      channel: channel,
+      text: text,
+      post_at: post_at
+    });
+    console.log(`Scheduled message "${text}" for channel ${channel} at ${post_at}`);
+  } catch (error) {
+    console.error('Error scheduling message:', error);
+    throw error;
+  }
+}
+
 async function deleteScheduledMessage(channel_id, message_id) {
   try {
     await web.chat.deleteScheduledMessage({
@@ -71,8 +85,8 @@ function saveScheduledMessage() {
 }
 
 module.exports = {
-  fetchChannels,
-  fetchScheduledMessages,
-  deleteScheduledMessage,
-  saveScheduledMessage
+    fetchChannels,
+    fetchScheduledMessages,
+    createScheduledMessage,
+    deleteScheduledMessage
 };

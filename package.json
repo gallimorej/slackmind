@@ -15,8 +15,9 @@
   },
   "homepage": "https://github.com/gallimorej/slackmind#readme",
   "dependencies": {
-    "express": "4.17.1",
     "@slack/web-api": "7.0.1",
-    "dotenv": "10.0.0"
+    "dotenv": "10.0.0",
+    "express": "^4.19.2",
+    "moment-timezone": "^0.5.45"
   }
 }

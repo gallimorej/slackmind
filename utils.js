@@ -1,4 +1,5 @@
 
+/*
 function getPostAtEpoch(date, hour, minute, ampm) {
     // Convert the hour to 24-hour format if PM is selected
     if (ampm === 'PM' && hour < 12) {
@@ -16,6 +17,15 @@ function getPostAtEpoch(date, hour, minute, ampm) {
   
     // Return the epoch time
     return postAt;
+}
+*/
+
+function getPostAtEpoch(dateTimeString) {
+  // Create a new Date object from the date-time string
+  const postAt = new Date(dateTimeString);
+
+  // Return the epoch time in seconds
+  return Math.floor(postAt.getTime() / 1000);
 }
 
 function getPostAtMMDDYYYY(epoch) {
@@ -43,21 +53,8 @@ function getPostAtTime(epoch) {
     return `${hours}:${minutes} ${ampm} ${timezone}`;
 }
 
-function getChannelName(channelId) {
-
-  const channels = window.myAPI.getChannels();
-  //console.log("how many messages in channelData? " + channels.length);
-  /*
-  window.myAPI.getChannels().then(channels => {
-    console.log("how many messages in channelData? " + channels.length);
-    const channel = channels.find(channel => channel.id === channelId);
-    return channel ? channel.name : 'Unknown Channel';
-  });
-  */
-  return channelId;
-}
-
-window.myAPI.loadChannels();
-//window.myAPI.loadScheduledMessages();
-window.myAPI.saveScheduledMessage();
-//window.myAPI.deleteScheduledMessage(channel_id, message_id);
+// Export the functions
+module.exports = {
+  getPostAtEpoch,
+  getPostAtMMDDYYYY
+};
