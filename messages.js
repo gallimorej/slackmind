@@ -1,1 +1,0 @@
-window.myAPI.loadScheduledMessages();

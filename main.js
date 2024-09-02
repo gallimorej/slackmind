@@ -17,6 +17,8 @@ twoMinutes.setMinutes(twoMinutes.getMinutes() + 2);
 // tomorrow.setDate(tomorrow.getDate() + 1);
 // tomorrow.setHours(9, 0, 0);
 
+
+
 function createWindow () {
     let win = new BrowserWindow({
         width: 800,
