@@ -3,7 +3,7 @@
 FROM node:14
 
 # Add a label to specify the image name
-LABEL name="slackmind"
+LABEL name="slackmind-local"
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app
@@ -12,14 +12,14 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied.
 COPY package*.json ./
 
-# Install production dependencies.
-RUN npm install --only=production
+# Install all dependencies (including dev dependencies).
+RUN npm install
 
 # Copy local code to the container image.
 COPY . .
 
 # Inform Docker that the container listens on the specified port.
-EXPOSE 8080
+EXPOSE 3000
 
 # Run the web service on container startup.
 CMD [ "node", "server.js" ]

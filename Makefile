@@ -1,9 +1,6 @@
-# Define variables
-APP_NAME = slackmind
-DOCKER_IMAGE = $(APP_NAME)
-DOCKER_CONTAINER = $(APP_NAME)-container
-PORT = 3000
-ENV_FILE = .env
+# Include environment variables
+ENV_FILE = $(PWD)/.env
+include $(ENV_FILE)
 
 # Default target
 .PHONY: all
@@ -22,11 +19,11 @@ run:
 # Run the application in Docker
 .PHONY: docker-build
 docker-build:
-	docker build -t $(DOCKER_IMAGE) .
+	docker build -t $(DOCKER_IMAGE) -f Dockerfile.local .
 
 .PHONY: docker-run
 docker-run: docker-build
-	docker run --env-file ${ENV_FILE} -p $(PORT):$(PORT) --name $(DOCKER_CONTAINER) $(DOCKER_IMAGE)
+	docker run --env-file ${ENV_FILE} -p $(LOCAL_PORT):$(LOCAL_PORT) --name $(DOCKER_CONTAINER) $(DOCKER_IMAGE)
 
 # Stop and remove the Docker container
 .PHONY: docker-clean
@@ -34,17 +31,33 @@ docker-clean:
 	docker stop $(DOCKER_CONTAINER) || true
 	docker rm $(DOCKER_CONTAINER) || true
 
-# Run tests
-.PHONY: test
-test:
-	npm test
+# Enable Cloud Build API
+.PHONY: enable-cloudbuild-api
+enable-cloudbuild-api:
+	gcloud services enable cloudbuild.googleapis.com
 
-# Clean up node_modules
-.PHONY: clean
-clean:
-	rm -rf node_modules
+# Grant Storage Object Viewer role to the service account
+.PHONY: grant-storage-permissions
+grant-storage-permissions:
+	gsutil iam ch serviceAccount:$(SERVICE_ACCOUNT):roles/storage.objectViewer gs://$(PROJECT_ID)_cloudbuild
 
-# Clean up Docker images and containers
-.PHONY: docker-prune
-docker-prune:
-	docker system prune -f
+# Build the Docker image for Google Cloud Run
+.PHONY: build-cloud
+build-cloud: enable-cloudbuild-api grant-storage-permissions
+	gcloud builds submit --tag gcr.io/$(PROJECT_ID)/$(APP_NAME)
+
+# Deploy to Google Cloud Run
+.PHONY: deploy-cloud
+deploy-cloud:
+	gcloud run deploy $(APP_NAME) --image gcr.io/$(PROJECT_ID)/$(APP_NAME) --platform managed --region $(REGION) --allow-unauthenticated --set-env-vars SLACK_TOKEN=$(SLACK_TOKEN)
+
+# Retrieve the service URL
+.PHONY: get-url
+get-url:
+	@echo "Service URL:"
+	@gcloud run services describe $(APP_NAME) --platform managed --region $(REGION) --format "value(status.url)"
+
+# Clean up local Docker images
+.PHONY: clean-cloud
+clean-cloud:
+	docker rmi gcr.io/$(PROJECT_ID)/$(APP_NAME)
