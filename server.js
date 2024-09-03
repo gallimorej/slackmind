@@ -1,15 +1,22 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
-const { fetchChannels, fetchScheduledMessages, createScheduledMessage } = require('./slackutils');
+const { fetchChannels, fetchScheduledMessages, createScheduledMessage, deleteScheduledMessage } = require('./slackutils');
 const { getPostAtEpoch } = require('./utils');
 const moment = require('moment-timezone');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Load configuration
+const configPath = path.join(__dirname, 'config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+const defaultTimezone = config.defaultTimezone || 'GMT';
+
 app.use(express.urlencoded({ extended: true })); // Middleware to parse form data
 
+/*
 app.get('/', async (req, res) => {
     try {
         const channels = await fetchChannels();
@@ -45,6 +52,37 @@ app.get('/', async (req, res) => {
         }
     }
 });
+*/
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Serve config.json
+app.get('/config.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'config.json'));
+});
+
+app.get('/scheduled-messages', async (req, res) => {
+    try {
+        const messages = await fetchScheduledMessages(); // Implement this function to fetch messages
+        res.json(messages);
+    } catch (error) {
+        console.error('Error fetching scheduled messages:', error);
+        res.status(500).send('Error fetching scheduled messages');
+    }
+});
+
+app.delete('/scheduled-messages/:channel_id/:message_id', async (req, res) => {
+    const { channel_id, message_id } = req.params;
+    try {
+        await deleteScheduledMessage(channel_id, message_id); // Pass both channel_id and message_id
+        res.status(200).send('Message deleted');
+    } catch (error) {
+        console.error('Error deleting scheduled message:', error);
+        res.status(500).send('Error deleting scheduled message');
+    }
+});
 
 app.get('/create-scheduled-message', async (req, res) => {
     try {
@@ -66,7 +104,8 @@ app.get('/create-scheduled-message', async (req, res) => {
         formHtml += '<label for="timezone">Timezone:</label>';
         formHtml += '<select name="timezone" id="timezone">';
         timezones.forEach(timezone => {
-        formHtml += `<option value="${timezone}">${timezone}</option>`;
+            const selected = timezone === defaultTimezone ? 'selected' : '';
+            formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
         });
         formHtml += '</select><br>';
         formHtml += '<button type="submit">Schedule Message</button>';
@@ -95,6 +134,8 @@ app.post('/create-scheduled-message', async (req, res) => {
         }
     }
 });
+
+
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
