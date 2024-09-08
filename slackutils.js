@@ -4,14 +4,28 @@ require('dotenv').config();
 const web = new WebClient(process.env.SLACK_TOKEN);
 
 async function fetchChannels() {
-  try {
-    const result = await web.conversations.list();
-    return result.channels;
-  } catch (error) {
-    console.error('Error fetching channels:', error);
-    throw error;
-  }
+    try {
+        const result = await web.conversations.list();
+        return result.channels;
+    } catch (error) {
+        console.error('Error fetching channels:', error);
+        throw error;
+    }
 }
+
+async function fetchChannelsAsMap() {
+    try {
+        const channels = await fetchChannels();
+        const channelMap = {};
+        channels.forEach(channel => {
+            channelMap[channel.id] = channel.name;
+        });
+        return channelMap;
+    } catch (error) {
+        console.error('Error fetching channels as map:', error);
+        throw error;
+    }
+  }
 
 async function fetchScheduledMessages() {
   try {
@@ -86,6 +100,7 @@ function saveScheduledMessage() {
 
 module.exports = {
     fetchChannels,
+    // fetchChannelsAsMap,
     fetchScheduledMessages,
     createScheduledMessage,
     deleteScheduledMessage

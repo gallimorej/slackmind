@@ -63,6 +63,17 @@ app.get('/config.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'config.json'));
 });
 
+// Define the /channels endpoint
+app.get('/channels', async (req, res) => {
+    try {
+        const channels = await fetchChannels();
+        res.json(channels);
+    } catch (error) {
+        console.error('Error fetching channels:', error);
+        res.status(500).json({ error: 'Failed to fetch channels' });
+    }
+});
+
 app.get('/scheduled-messages', async (req, res) => {
     try {
         const messages = await fetchScheduledMessages(); // Implement this function to fetch messages
@@ -134,8 +145,6 @@ app.post('/create-scheduled-message', async (req, res) => {
         }
     }
 });
-
-
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

@@ -16,6 +16,10 @@
         th {
             background-color: #f2f2f2;
         }
+        .edit-icon {
+          cursor: pointer;
+          color: red;
+        }
         .delete-icon {
             cursor: pointer;
             color: red;
@@ -49,24 +53,40 @@
           return config.defaultTimezone || 'GMT';
         }
 
+        async function fetchChannels() {
+          const response = await fetch('/channels');
+          const data = await response.json();
+          const channelMap = {};
+          data.forEach(channel => {
+              channelMap[channel.id] = channel.name;
+          });
+          return channelMap;
+        }
+
         async function fetchScheduledMessages() {
             const defaultTimezone = await fetchConfig();
+            const channelMap = await fetchChannels();
             const response = await fetch('/scheduled-messages');
             const messages = await response.json();
+
             const tableBody = document.getElementById('messages-table-body');
             tableBody.innerHTML = '';
             messages.forEach(message => {
                 const row = document.createElement('tr');
 
+                const channelName = channelMap[message.channel_id] || message.channel_id;
                 const timezone = message.timezone || defaultTimezone; // Use default timezone if not defined
                 const postAt = moment.unix(message.post_at).tz(timezone).format('YYYY-MM-DD HH:mm:ss z');
-
+                
                 row.innerHTML = `
                     <td>${message.id}</td>
-                    <td>${message.channel_id}</td>
+                    <td>${channelName}</td>
                     <td>${postAt}</td>
                     <td>${message.text}</td>
-                    <td><span class="delete-icon" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span></td>
+                    <td>
+                      <span class="edit-icon" onclick="editMessage('${message.channel_id}', '${message.id}')">📝</span>
+                      <span class="delete-icon" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span>
+                    </td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -77,6 +97,11 @@
                 await fetch(`/scheduled-messages/${channel_id}/${message_id}`, { method: 'DELETE' });
                 fetchScheduledMessages();
             }
+        }
+
+        function editMessage(channel_id, message_id) {
+          // Implement the edit functionality here
+          alert(`Edit message with ID: ${message_id} in channel: ${channel_id}`);
         }
 
         // Fetch and display messages on page load
