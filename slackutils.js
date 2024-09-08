@@ -30,7 +30,7 @@ async function fetchChannelsAsMap() {
 async function fetchScheduledMessages() {
   try {
     const res = await web.chat.scheduledMessages.list();
-    return res.scheduled_messages; // Return the messages array
+    return res.scheduled_messages; // Return the messages
   } catch (error) {
     console.error('Error fetching scheduled messages:', error);
     throw error;
@@ -44,7 +44,6 @@ async function createScheduledMessage(channel, text, post_at) {
       text: text,
       post_at: post_at
     });
-    console.log(`Scheduled message "${text}" for channel ${channel} at ${post_at}`);
   } catch (error) {
     console.error('Error scheduling message:', error);
     throw error;
@@ -82,8 +81,6 @@ function saveScheduledMessage() {
     const scheduledAMPM = document.querySelector('input[name="scheduled_ampm"]:checked').value;
 
     const scheduledDateTime = getPostAtEpoch(scheduledDate, scheduledHour, scheduledMinute, scheduledAMPM);
-
-    console.log(`Submitting Channel: ${channel}, Post: ${post}, Scheduled Date: ${scheduledDateTime}`);
 
     try {
       await web.chat.scheduleMessage({

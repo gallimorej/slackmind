@@ -31,6 +31,7 @@
 <body>
     <h1>Scheduled Messages</h1>
     <a href="/create-scheduled-message">Create Scheduled Message</a>
+    <br><br>
     <table>
         <thead>
             <tr>
@@ -100,8 +101,11 @@
         }
 
         function editMessage(channel_id, message_id) {
-          // Implement the edit functionality here
-          alert(`Edit message with ID: ${message_id} in channel: ${channel_id}`);
+            const params = new URLSearchParams({
+                channel_id: channel_id,
+                message_id: message_id
+            });
+            window.location.href = `/edit-scheduled-message?${params.toString()}`;
         }
 
         // Fetch and display messages on page load
