@@ -1,7 +1,7 @@
 {
   "name": "slackmind",
   "version": "1.0.0",
-  "description": "An app to help you keep track of your Slack reminders",
+  "description": "An app to help you keep track of your Slack reminders and scheduled messages.",
   "main": "main.js",
   "repository": {
     "type": "git",

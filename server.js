@@ -71,7 +71,7 @@ app.get('/create-scheduled-message', async (req, res) => {
         });
         formHtml += '</select><br>';
         formHtml += '<label for="message">Message:</label>';
-        formHtml += '<input type="text" id="message" name="message"><br>';
+        formHtml += `<textarea id="message" name="message" rows="10" cols="50"></textarea><br>`;
         formHtml += '<label for="post_at">Post At (timestamp):</label>';
         formHtml += '<input type="datetime-local" id="post_at" name="post_at"><br>';
         formHtml += '<label for="timezone">Timezone:</label>';
@@ -135,7 +135,8 @@ app.get('/edit-scheduled-message', async (req, res) => {
         });
         formHtml += '</select><br>';
         formHtml += '<label for="message">Message:</label>';
-        formHtml += `<input type="text" id="message" name="message" value="${selectedMessage.text}"><br>`;
+        // formHtml += `<input type="text" id="message" name="message" value="${selectedMessage.text}"><br>`;
+        formHtml += `<textarea id="message" name="message" rows="10" cols="50">${selectedMessage.text}</textarea><br>`;
         formHtml += '<label for="post_at">Post At (timestamp):</label>';
         //TODO adjust the date and time to the timezone
         formHtml += `<input type="datetime-local" id="post_at" name="post_at" value="${moment.unix(selectedMessage.post_at).tz(defaultTimezone).format('YYYY-MM-DDTHH:mm')}"><br>`;

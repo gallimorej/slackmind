@@ -37,12 +37,26 @@ async function fetchScheduledMessages() {
   }
 }
 
-async function createScheduledMessage(channel, text, post_at) {
+async function createScheduledMessage(channel, message, post_at) {
+  /*
+  const block = [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: message
+      }
+    }];
+
+  console.log('blocks:', block);
+  */
+
   try {
     await web.chat.scheduleMessage({
       channel: channel,
-      text: text,
-      post_at: post_at
+      text: message,
+      // blocks: JSON.stringify(block),
+      post_at: post_at,
     });
   } catch (error) {
     console.error('Error scheduling message:', error);

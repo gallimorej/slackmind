@@ -22,7 +22,7 @@ docker-build:
 	docker build -t $(DOCKER_IMAGE) -f Dockerfile.local .
 
 .PHONY: docker-run
-docker-run: docker-bui
+docker-run: docker-build
 	docker run --env-file ${ENV_FILE} -p $(LOCAL_PORT):$(LOCAL_PORT) --name $(DOCKER_CONTAINER) $(DOCKER_IMAGE)
 
 # Stop and remove the Docker container
