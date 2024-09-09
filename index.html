@@ -24,6 +24,9 @@
         th.sort-desc::after {
             content: ' ▼';
         }
+        th.no-sort {
+            cursor: default; /* Override cursor style for non-sortable columns */
+        }
         .edit-icon {
             cursor: pointer;
             color: red;
@@ -48,7 +51,7 @@
                 <th>Channel</th>
                 <th>Scheduled Time</th>
                 <th>Message</th>
-                <th>Action</th>
+                <th class="no-sort">Action</th>
             </tr>
         </thead>
         <tbody id="messages-table-body">
@@ -62,6 +65,9 @@
             const headers = table.querySelectorAll('th');
     
             headers.forEach((header, index) => {
+                // Skip adding sort functionality to the "Action" column
+                if (header.textContent.trim() === 'Action') return;
+
                 header.addEventListener('click', () => {
                     const direction = header.classList.contains('sort-asc') ? 'desc' : 'asc';
                     sortTableByColumn(table, index, direction);
