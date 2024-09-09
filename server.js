@@ -20,6 +20,9 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Serve config.json
 app.get('/config.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'config.json'));
