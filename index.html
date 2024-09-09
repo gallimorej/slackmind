@@ -16,10 +16,17 @@
         }
         th {
             background-color: #f2f2f2;
+            cursor: pointer; /* Add cursor pointer to indicate sortable columns */
+        }
+        th.sort-asc::after {
+            content: ' ▲';
+        }
+        th.sort-desc::after {
+            content: ' ▼';
         }
         .edit-icon {
-          cursor: pointer;
-          color: red;
+            cursor: pointer;
+            color: red;
         }
         .delete-icon {
             cursor: pointer;
@@ -28,12 +35,13 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
 </head>
 <body>
     <h1>Scheduled Messages</h1>
     <a href="/create-scheduled-message">Create Scheduled Message</a>
     <br><br>
-    <table>
+    <table id="scheduledMessagesTable">
         <thead>
             <tr>
                 <th>ID</th>  
@@ -49,6 +57,50 @@
     </table>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.getElementById('scheduledMessagesTable');
+            const headers = table.querySelectorAll('th');
+    
+            headers.forEach((header, index) => {
+                header.addEventListener('click', () => {
+                    const direction = header.classList.contains('sort-asc') ? 'desc' : 'asc';
+                    sortTableByColumn(table, index, direction);
+                    updateSortIndicators(headers, header, direction);
+                });
+            });
+    
+            function sortTableByColumn(table, column, direction) {
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+                const sortedRows = rows.sort((a, b) => {
+                    const aText = a.children[column].textContent.trim();
+                    const bText = b.children[column].textContent.trim();
+    
+                    if (!isNaN(aText) && !isNaN(bText)) {
+                        return direction === 'asc' ? aText - bText : bText - aText;
+                    }
+    
+                    return direction === 'asc' ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                });
+    
+                tbody.innerHTML = '';
+                sortedRows.forEach(row => tbody.appendChild(row));
+            }
+    
+            function updateSortIndicators(headers, sortedHeader, direction) {
+                headers.forEach(header => {
+                    header.classList.remove('sort-asc', 'sort-desc');
+                });
+    
+                if (direction === 'asc') {
+                    sortedHeader.classList.add('sort-asc');
+                } else {
+                    sortedHeader.classList.add('sort-desc');
+                }
+            }
+        });
+
         async function fetchConfig() {
           const response = await fetch('/config.json');
           const config = await response.json();
