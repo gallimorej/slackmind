@@ -178,6 +178,70 @@ app.post('/edit-scheduled-message', async (req, res) => {
     }
 });
 
+app.get('/copy-scheduled-message', async (req, res) => {
+    try {
+        const { channel_id, message_id } = req.query;
+        const messages = await fetchScheduledMessages();
+
+        const selectedMessage = messages.find(message => message.id === message_id);
+
+        if (!selectedMessage) {
+            return res.status(404).send('Message not found');
+        }
+
+        const channels = await fetchChannels();
+        const timezones = moment.tz.names();
+
+        let formHtml = '<h1>Copy Scheduled Message</h1>';
+        
+        formHtml += '<form action="/copy-scheduled-message" method="POST">';
+        formHtml += '<label for="channel">Channel:</label>';
+        formHtml += '<select name="channel" id="channel">';
+        channels.forEach(channel => {
+            const selected = channel.id === selectedMessage.channel_id ? 'selected' : '';
+            formHtml += `<option value="${channel.id}" ${selected}>${channel.name}</option>`;
+        });
+        formHtml += '</select><br>';
+        formHtml += '<label for="message">Message:</label>';
+        // formHtml += `<input type="text" id="message" name="message" value="${selectedMessage.text}"><br>`;
+        formHtml += `<textarea id="message" name="message" rows="10" cols="50">${selectedMessage.text}</textarea><br>`;
+        formHtml += '<label for="post_at">Post At (timestamp):</label>';
+        //TODO adjust the date and time to the timezone
+        formHtml += `<input type="datetime-local" id="post_at" name="post_at" value="${moment.unix(selectedMessage.post_at).tz(defaultTimezone).format('YYYY-MM-DDTHH:mm')}"><br>`;
+        formHtml += '<label for="timezone">Timezone:</label>';
+        formHtml += '<select name="timezone" id="timezone">';
+        timezones.forEach(timezone => {
+            const selected = timezone === defaultTimezone ? 'selected' : '';
+            formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
+        });
+        formHtml += '</select><br>';
+        formHtml += '<button type="submit">Schedule Message</button>';
+        formHtml += '</form>';
+
+        res.send(formHtml);
+    } catch (error) {
+        console.error('Error rendering form:', error);
+        if (!res.headersSent) {
+        res.status(500).send('Error rendering form');
+        }
+    }
+});
+
+app.post('/copy-scheduled-message', async (req, res) => {
+    const { channel, message, post_at, timezone } = req.body;
+    const localDateTime = moment.tz(post_at, timezone);
+    const scheduledDateTime = localDateTime.unix(); // Convert to epoch time in seconds
+    try {
+        await createScheduledMessage(channel, message, scheduledDateTime);
+        res.redirect('/');
+    } catch (error) {
+        console.error('Error copying scheduled message:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Error copying scheduled message');
+        }
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

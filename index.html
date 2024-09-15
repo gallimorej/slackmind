@@ -31,6 +31,10 @@
             cursor: pointer;
             color: red;
         }
+        .copy-icon {
+            cursor: pointer;
+            color: red;
+        }
         .delete-icon {
             cursor: pointer;
             color: red;
@@ -145,6 +149,7 @@
                     <td>${message.text}</td>
                     <td>
                       <span class="edit-icon" onclick="editMessage('${message.channel_id}', '${message.id}')">📝</span>
+                      <span class="copy-icon" onclick="copyMessage('${message.channel_id}', '${message.id}')">📋</span>
                       <span class="delete-icon" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span>
                     </td>
                 `;
@@ -165,6 +170,14 @@
                 message_id: message_id
             });
             window.location.href = `/edit-scheduled-message?${params.toString()}`;
+        }
+
+        function copyMessage(channel_id, message_id) {
+            const params = new URLSearchParams({
+                channel_id: channel_id,
+                message_id: message_id
+            });
+            window.location.href = `/copy-scheduled-message?${params.toString()}`;
         }
 
         // Fetch and display messages on page load
