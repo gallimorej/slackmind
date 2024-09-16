@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
-const { fetchChannels, fetchScheduledMessages, createScheduledMessage, deleteScheduledMessage } = require('./slackutils');
+const { fetchChannels, fetchScheduledMessages, createScheduledMessage, deleteScheduledMessage, fetchTeamInfo } = require('./slackutils');
 const { getPostAtEpoch } = require('./utils');
 const moment = require('moment-timezone');
 const fs = require('fs');
@@ -39,6 +39,18 @@ app.get('/channels', async (req, res) => {
     }
 });
 
+// Define the /team-info endpoint
+app.get('/team-info', async (req, res) => {
+    try {
+        const team = await fetchTeamInfo();
+        res.json(team);
+    } catch (error) {
+        console.error('Error fetching team info:', error);
+        res.status(500).json({ error: 'Failed to fetch team info' });
+    }
+});
+
+
 app.get('/scheduled-messages', async (req, res) => {
     try {
         const messages = await fetchScheduledMessages(); // Implement this function to fetch messages
@@ -62,10 +74,29 @@ app.delete('/scheduled-messages/:channel_id/:message_id', async (req, res) => {
 
 app.get('/create-scheduled-message', async (req, res) => {
     try {
+        const team = await fetchTeamInfo();
         const channels = await fetchChannels();
         const timezones = moment.tz.names();
 
-        let formHtml = '<h1>Create Scheduled Message</h1>';
+        let formHtml = '<!DOCTYPE html>';
+        formHtml += '<html lang="en">';
+        formHtml += '<head>';
+        formHtml += '<meta charset="UTF-8">';
+        formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+        formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
+        formHtml += '<title>Create Scheduled Message</title>';
+        formHtml += '<style>';
+        formHtml += '#workspace-info { display: flex; align-items: center; }';
+        formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
+        formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
+        formHtml += '</style>';
+        formHtml += '</head>';
+        formHtml += '<body>';
+        formHtml += '<div id="workspace-info">';
+        formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
+        formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
+        formHtml += '</div>';
+        formHtml += '<h2>Create Scheduled Message</h2>';
         formHtml += '<form action="/create-scheduled-message" method="POST">';
         formHtml += '<label for="channel">Channel:</label>';
         formHtml += '<select name="channel" id="channel">';
@@ -87,6 +118,8 @@ app.get('/create-scheduled-message', async (req, res) => {
         formHtml += '<button type="submit">Schedule Message</button>';
         formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
         formHtml += '</form>';
+        formHtml += '</body>';
+        formHtml += '</html>';
 
         res.send(formHtml);
     } catch (error) {
@@ -123,10 +156,29 @@ app.get('/edit-scheduled-message', async (req, res) => {
             return res.status(404).send('Message not found');
         }
 
+        const team = await fetchTeamInfo();
         const channels = await fetchChannels();
         const timezones = moment.tz.names();
 
-        let formHtml = '<h1>Edit Scheduled Message</h1>';
+        let formHtml = '<!DOCTYPE html>';
+        formHtml += '<html lang="en">';
+        formHtml += '<head>';
+        formHtml += '<meta charset="UTF-8">';
+        formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+        formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
+        formHtml += '<title>Edit Scheduled Message</title>';
+        formHtml += '<style>';
+        formHtml += '#workspace-info { display: flex; align-items: center; }';
+        formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
+        formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
+        formHtml += '</style>';
+        formHtml += '</head>';
+        formHtml += '<body>';
+        formHtml += '<div id="workspace-info">';
+        formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
+        formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
+        formHtml += '</div>';
+        formHtml += '<h2>Edit Scheduled Message</h2>';
         
         formHtml += '<form action="/edit-scheduled-message" method="POST">';
         formHtml += `<input type="hidden" name="old_channel_id" value="${channel_id}">`;
@@ -191,10 +243,29 @@ app.get('/copy-scheduled-message', async (req, res) => {
             return res.status(404).send('Message not found');
         }
 
+        const team = await fetchTeamInfo();
         const channels = await fetchChannels();
         const timezones = moment.tz.names();
 
-        let formHtml = '<h1>Copy Scheduled Message</h1>';
+        let formHtml = '<!DOCTYPE html>';
+        formHtml += '<html lang="en">';
+        formHtml += '<head>';
+        formHtml += '<meta charset="UTF-8">';
+        formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+        formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
+        formHtml += '<title>Copy Scheduled Message</title>';
+        formHtml += '<style>';
+        formHtml += '#workspace-info { display: flex; align-items: center; }';
+        formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
+        formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
+        formHtml += '</style>';
+        formHtml += '</head>';
+        formHtml += '<body>';
+        formHtml += '<div id="workspace-info">';
+        formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
+        formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
+        formHtml += '</div>';
+        formHtml += '<h2>Copy Scheduled Message</h2>';
         
         formHtml += '<form action="/copy-scheduled-message" method="POST">';
         formHtml += '<label for="channel">Channel:</label>';

@@ -39,14 +39,38 @@
             cursor: pointer;
             color: red;
         }
+        #workspace-info {
+            display: flex;
+            align-items: center;
+        }
+        #workspace-icon {
+            margin-right: 10px; /* Add some space between the icon and the name */
+        }
+        .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
 </head>
 <body>
-    <h1>Scheduled Messages</h1>
-    <a href="/create-scheduled-message">Create Scheduled Message</a>
+    <div id="workspace-info">
+        <img id="workspace-icon" src="" alt="Workspace Icon" style="display: none; width: 68px; height: 68px;">
+        <h1 id="workspace-name"></h1>
+    </div>
+    <h2>Scheduled Messages</h2>
+    <button class="button" onclick="window.location.href='/create-scheduled-message'">Create Scheduled Message</button>
     <br><br>
     <table id="scheduledMessagesTable">
         <thead>
@@ -180,8 +204,25 @@
             window.location.href = `/copy-scheduled-message?${params.toString()}`;
         }
 
+        async function fetchWorkspaceInfo() {
+            try {
+                const response = await fetch('/team-info');
+                const team = await response.json();
+        
+                const workspaceNameElement = document.getElementById('workspace-name');
+                const workspaceIconElement = document.getElementById('workspace-icon');
+        
+                workspaceNameElement.textContent = team.name;
+                workspaceIconElement.src = team.icon.image_68;
+                workspaceIconElement.style.display = 'inline';
+            } catch (error) {
+                console.error('Failed to fetch workspace info:', error);
+            }
+        }
+
         // Fetch and display messages on page load
         fetchScheduledMessages();
+        fetchWorkspaceInfo();
     </script>
 </body>
 </html>

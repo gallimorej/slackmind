@@ -3,6 +3,16 @@ require('dotenv').config();
 
 const web = new WebClient(process.env.SLACK_TOKEN);
 
+async function fetchTeamInfo() {
+  try {
+      const result = await web.team.info();
+      return result.team;
+  } catch (error) {
+      console.error('Error fetching team info:', error);
+      throw error;
+  }
+}
+
 async function fetchChannels() {
     try {
         const result = await web.conversations.list();
@@ -12,20 +22,6 @@ async function fetchChannels() {
         throw error;
     }
 }
-
-async function fetchChannelsAsMap() {
-    try {
-        const channels = await fetchChannels();
-        const channelMap = {};
-        channels.forEach(channel => {
-            channelMap[channel.id] = channel.name;
-        });
-        return channelMap;
-    } catch (error) {
-        console.error('Error fetching channels as map:', error);
-        throw error;
-    }
-  }
 
 async function fetchScheduledMessages() {
   try {
@@ -38,19 +34,6 @@ async function fetchScheduledMessages() {
 }
 
 async function createScheduledMessage(channel, message, post_at) {
-  /*
-  const block = [
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: message
-      }
-    }];
-
-  console.log('blocks:', block);
-  */
-
   try {
     await web.chat.scheduleMessage({
       channel: channel,
@@ -76,42 +59,9 @@ async function deleteScheduledMessage(channel_id, message_id) {
   }
 }
 
-function saveScheduledMessage() {
-  // Get the submit button
-  const saveButton = document.getElementById('save');
-
-  // Add an event listener to the submit button
-  saveButton.addEventListener('click', async function(event) {
-    // Prevent the form from being submitted normally
-    event.preventDefault();
-
-    // Get the values from the form
-    const channel = document.getElementById('channel').value;
-    const post = document.getElementById('post').value;
-    const scheduledDate = document.getElementById('scheduled_date').value;
-
-    const scheduledHour = parseInt(document.getElementById('scheduled_hour').value, 10);
-    const scheduledMinute = parseInt(document.getElementById('scheduled_minute').value, 10);
-    const scheduledAMPM = document.querySelector('input[name="scheduled_ampm"]:checked').value;
-
-    const scheduledDateTime = getPostAtEpoch(scheduledDate, scheduledHour, scheduledMinute, scheduledAMPM);
-
-    try {
-      await web.chat.scheduleMessage({
-        channel: channel,
-        text: post,
-        // divide by 1000 to convert to seconds
-        post_at: scheduledDateTime / 1000
-      });
-    } catch (error) {
-      console.error('Error scheduling message:', error);
-    }
-  });
-}
-
 module.exports = {
     fetchChannels,
-    // fetchChannelsAsMap,
+    fetchTeamInfo,
     fetchScheduledMessages,
     createScheduledMessage,
     deleteScheduledMessage
