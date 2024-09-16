@@ -148,9 +148,9 @@
                     <td>${postAt}</td>
                     <td>${message.text}</td>
                     <td>
-                      <span class="edit-icon" onclick="editMessage('${message.channel_id}', '${message.id}')">📝</span>
-                      <span class="copy-icon" onclick="copyMessage('${message.channel_id}', '${message.id}')">📋</span>
-                      <span class="delete-icon" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span>
+                      <span class="edit-icon" title="Edit Scheduled Message" onclick="editMessage('${message.channel_id}', '${message.id}')">📝</span>
+                      <span class="copy-icon" title="Copy Scheduled Message" onclick="copyMessage('${message.channel_id}', '${message.id}')">📋</span>
+                      <span class="delete-icon" title="Delete Scheduled Message" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span>
                     </td>
                 `;
                 tableBody.appendChild(row);

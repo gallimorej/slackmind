@@ -83,8 +83,9 @@ app.get('/create-scheduled-message', async (req, res) => {
             const selected = timezone === defaultTimezone ? 'selected' : '';
             formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
         });
-        formHtml += '</select><br>';
+        formHtml += '</select><br><br>';
         formHtml += '<button type="submit">Schedule Message</button>';
+        formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
         formHtml += '</form>';
 
         res.send(formHtml);
@@ -149,8 +150,9 @@ app.get('/edit-scheduled-message', async (req, res) => {
             const selected = timezone === defaultTimezone ? 'selected' : '';
             formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
         });
-        formHtml += '</select><br>';
+        formHtml += '</select><br><br>';
         formHtml += '<button type="submit">Schedule Message</button>';
+        formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
         formHtml += '</form>';
 
         res.send(formHtml);
@@ -214,8 +216,9 @@ app.get('/copy-scheduled-message', async (req, res) => {
             const selected = timezone === defaultTimezone ? 'selected' : '';
             formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
         });
-        formHtml += '</select><br>';
+        formHtml += '</select><br><br>';
         formHtml += '<button type="submit">Schedule Message</button>';
+        formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
         formHtml += '</form>';
 
         res.send(formHtml);
