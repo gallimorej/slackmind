@@ -14,6 +14,61 @@ const configPath = path.join(__dirname, 'config.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 const defaultTimezone = config.defaultTimezone || 'GMT';
 
+function generateFormHtml(team, channels, timezones, formAction, formTitle, message = {}) {
+    let formHtml = '<!DOCTYPE html>';
+    formHtml += '<html lang="en">';
+    formHtml += '<head>';
+    formHtml += '<meta charset="UTF-8">';
+    formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+    formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
+    formHtml += `<title>${formTitle}</title>`;
+    formHtml += '<style>';
+    formHtml += '#workspace-info { display: flex; align-items: center; }';
+    formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
+    formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
+    formHtml += '</style>';
+    formHtml += '</head>';
+    formHtml += '<body>';
+    formHtml += '<div id="workspace-info">';
+    formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
+    formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
+    formHtml += '</div>';
+    formHtml += `<h2>${formTitle}</h2>`;
+    formHtml += `<form action="${formAction}" method="POST">`;
+    formHtml += `<input type="hidden" name="old_channel_id" value="${message.channel_id}">`;
+    formHtml += `<input type="hidden" name="old_message_id" value="${message.id}">`;
+    formHtml += '<label for="channel">Channel:</label>';
+    formHtml += '<select name="channel" id="channel">';
+    channels.forEach(channel => {
+        const selected = message.channel_id === channel.id ? 'selected' : '';
+        formHtml += `<option value="${channel.id}" ${selected}>${channel.name}</option>`;
+    });
+    formHtml += '</select><br>';
+    formHtml += '<label for="message">Message:</label>';
+    formHtml += `<textarea id="message" name="message" rows="10" cols="50">${message.text || ''}</textarea><br>`;
+    formHtml += '<label for="post_at">Post At (timestamp):</label>';
+    formHtml += `<input type="datetime-local" id="post_at" name="post_at"`;
+    if (message) {
+        const postAtValue = moment.unix(message.post_at).tz(defaultTimezone).format('YYYY-MM-DDTHH:mm');
+        formHtml += ` value="${postAtValue}"`;
+    }
+    
+    formHtml += `><br>`;
+    formHtml += '<label for="timezone">Timezone:</label>';
+    formHtml += '<select name="timezone" id="timezone">';
+    timezones.forEach(timezone => {
+        const selected = timezone === defaultTimezone ? 'selected' : '';
+        formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
+    });
+    formHtml += '</select><br><br>';
+    formHtml += '<button type="submit">Submit</button>';
+    formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>';
+    formHtml += '</form>';
+    formHtml += '</body>';
+    formHtml += '</html>';
+    return formHtml;
+}
+
 app.use(express.urlencoded({ extended: true })); // Middleware to parse form data
 
 app.get('/', (req, res) => {
@@ -77,56 +132,54 @@ app.get('/create-scheduled-message', async (req, res) => {
         const team = await fetchTeamInfo();
         const channels = await fetchChannels();
         const timezones = moment.tz.names();
-
-        let formHtml = '<!DOCTYPE html>';
-        formHtml += '<html lang="en">';
-        formHtml += '<head>';
-        formHtml += '<meta charset="UTF-8">';
-        formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-        formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
-        formHtml += '<title>Create Scheduled Message</title>';
-        formHtml += '<style>';
-        formHtml += '#workspace-info { display: flex; align-items: center; }';
-        formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
-        formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
-        formHtml += '</style>';
-        formHtml += '</head>';
-        formHtml += '<body>';
-        formHtml += '<div id="workspace-info">';
-        formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
-        formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
-        formHtml += '</div>';
-        formHtml += '<h2>Create Scheduled Message</h2>';
-        formHtml += '<form action="/create-scheduled-message" method="POST">';
-        formHtml += '<label for="channel">Channel:</label>';
-        formHtml += '<select name="channel" id="channel">';
-        channels.forEach(channel => {
-            formHtml += `<option value="${channel.id}">${channel.name}</option>`;
-        });
-        formHtml += '</select><br>';
-        formHtml += '<label for="message">Message:</label>';
-        formHtml += `<textarea id="message" name="message" rows="10" cols="50"></textarea><br>`;
-        formHtml += '<label for="post_at">Post At (timestamp):</label>';
-        formHtml += '<input type="datetime-local" id="post_at" name="post_at"><br>';
-        formHtml += '<label for="timezone">Timezone:</label>';
-        formHtml += '<select name="timezone" id="timezone">';
-        timezones.forEach(timezone => {
-            const selected = timezone === defaultTimezone ? 'selected' : '';
-            formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
-        });
-        formHtml += '</select><br><br>';
-        formHtml += '<button type="submit">Schedule Message</button>';
-        formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
-        formHtml += '</form>';
-        formHtml += '</body>';
-        formHtml += '</html>';
-
+        const formHtml = generateFormHtml(team, channels, timezones, '/create-scheduled-message', 'Create Scheduled Message');
         res.send(formHtml);
     } catch (error) {
         console.error('Error rendering form:', error);
-        if (!res.headersSent) {
         res.status(500).send('Error rendering form');
+    }
+});
+
+app.get('/edit-scheduled-message', async (req, res) => {
+    try {
+        const { channel_id, message_id } = req.query;
+        const team = await fetchTeamInfo();
+        const channels = await fetchChannels();
+        const timezones = moment.tz.names();
+        const messages = await fetchScheduledMessages();
+        const selectedMessage = messages.find(message => message.id === message_id);
+
+        if (!selectedMessage) {
+            return res.status(404).send('Message not found');
         }
+
+        //const formHtml = generateFormHtml(team, channels, timezones, `/edit-scheduled-message?channel_id=${channel_id}&id=${message_id}`, 'Edit Scheduled Message', selectedMessage);
+        const formHtml = generateFormHtml(team, channels, timezones, `/edit-scheduled-message`, 'Edit Scheduled Message', selectedMessage);
+        res.send(formHtml);
+    } catch (error) {
+        console.error('Error rendering form:', error);
+        res.status(500).send('Error rendering form');
+    }
+});
+
+app.get('/copy-scheduled-message', async (req, res) => {
+    try {
+        const { channel_id, message_id } = req.query;
+        const team = await fetchTeamInfo();
+        const channels = await fetchChannels();
+        const timezones = moment.tz.names();
+        const messages = await fetchScheduledMessages();
+        const selectedMessage = messages.find(message => message.id === message_id);
+
+        if (!selectedMessage) {
+            return res.status(404).send('Message not found');
+        }
+    
+        const formHtml = generateFormHtml(team, channels, timezones, '/create-scheduled-message', 'Copy Scheduled Message', selectedMessage);
+        res.send(formHtml);
+    } catch (error) {
+        console.error('Error rendering form:', error);
+        res.status(500).send('Error rendering form');
     }
 });
 
@@ -145,77 +198,6 @@ app.post('/create-scheduled-message', async (req, res) => {
     }
 });
 
-app.get('/edit-scheduled-message', async (req, res) => {
-    try {
-        const { channel_id, message_id } = req.query;
-        const messages = await fetchScheduledMessages();
-
-        const selectedMessage = messages.find(message => message.id === message_id);
-
-        if (!selectedMessage) {
-            return res.status(404).send('Message not found');
-        }
-
-        const team = await fetchTeamInfo();
-        const channels = await fetchChannels();
-        const timezones = moment.tz.names();
-
-        let formHtml = '<!DOCTYPE html>';
-        formHtml += '<html lang="en">';
-        formHtml += '<head>';
-        formHtml += '<meta charset="UTF-8">';
-        formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-        formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
-        formHtml += '<title>Edit Scheduled Message</title>';
-        formHtml += '<style>';
-        formHtml += '#workspace-info { display: flex; align-items: center; }';
-        formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
-        formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
-        formHtml += '</style>';
-        formHtml += '</head>';
-        formHtml += '<body>';
-        formHtml += '<div id="workspace-info">';
-        formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
-        formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
-        formHtml += '</div>';
-        formHtml += '<h2>Edit Scheduled Message</h2>';
-        
-        formHtml += '<form action="/edit-scheduled-message" method="POST">';
-        formHtml += `<input type="hidden" name="old_channel_id" value="${channel_id}">`;
-        formHtml += `<input type="hidden" name="old_message_id" value="${message_id}">`;
-        formHtml += '<label for="channel">Channel:</label>';
-        formHtml += '<select name="channel" id="channel">';
-        channels.forEach(channel => {
-            const selected = channel.id === selectedMessage.channel_id ? 'selected' : '';
-            formHtml += `<option value="${channel.id}" ${selected}>${channel.name}</option>`;
-        });
-        formHtml += '</select><br>';
-        formHtml += '<label for="message">Message:</label>';
-        // formHtml += `<input type="text" id="message" name="message" value="${selectedMessage.text}"><br>`;
-        formHtml += `<textarea id="message" name="message" rows="10" cols="50">${selectedMessage.text}</textarea><br>`;
-        formHtml += '<label for="post_at">Post At (timestamp):</label>';
-        //TODO adjust the date and time to the timezone
-        formHtml += `<input type="datetime-local" id="post_at" name="post_at" value="${moment.unix(selectedMessage.post_at).tz(defaultTimezone).format('YYYY-MM-DDTHH:mm')}"><br>`;
-        formHtml += '<label for="timezone">Timezone:</label>';
-        formHtml += '<select name="timezone" id="timezone">';
-        timezones.forEach(timezone => {
-            const selected = timezone === defaultTimezone ? 'selected' : '';
-            formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
-        });
-        formHtml += '</select><br><br>';
-        formHtml += '<button type="submit">Schedule Message</button>';
-        formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
-        formHtml += '</form>';
-
-        res.send(formHtml);
-    } catch (error) {
-        console.error('Error rendering form:', error);
-        if (!res.headersSent) {
-        res.status(500).send('Error rendering form');
-        }
-    }
-});
-
 app.post('/edit-scheduled-message', async (req, res) => {
     const { old_channel_id, old_message_id, channel, message, post_at, timezone } = req.body;
     const localDateTime = moment.tz(post_at, timezone);
@@ -228,75 +210,6 @@ app.post('/edit-scheduled-message', async (req, res) => {
         console.error('Error editing scheduled message:', error);
         if (!res.headersSent) {
             res.status(500).send('Error editing scheduled message');
-        }
-    }
-});
-
-app.get('/copy-scheduled-message', async (req, res) => {
-    try {
-        const { channel_id, message_id } = req.query;
-        const messages = await fetchScheduledMessages();
-
-        const selectedMessage = messages.find(message => message.id === message_id);
-
-        if (!selectedMessage) {
-            return res.status(404).send('Message not found');
-        }
-
-        const team = await fetchTeamInfo();
-        const channels = await fetchChannels();
-        const timezones = moment.tz.names();
-
-        let formHtml = '<!DOCTYPE html>';
-        formHtml += '<html lang="en">';
-        formHtml += '<head>';
-        formHtml += '<meta charset="UTF-8">';
-        formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-        formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
-        formHtml += '<title>Copy Scheduled Message</title>';
-        formHtml += '<style>';
-        formHtml += '#workspace-info { display: flex; align-items: center; }';
-        formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
-        formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
-        formHtml += '</style>';
-        formHtml += '</head>';
-        formHtml += '<body>';
-        formHtml += '<div id="workspace-info">';
-        formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
-        formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
-        formHtml += '</div>';
-        formHtml += '<h2>Copy Scheduled Message</h2>';
-        
-        formHtml += '<form action="/copy-scheduled-message" method="POST">';
-        formHtml += '<label for="channel">Channel:</label>';
-        formHtml += '<select name="channel" id="channel">';
-        channels.forEach(channel => {
-            const selected = channel.id === selectedMessage.channel_id ? 'selected' : '';
-            formHtml += `<option value="${channel.id}" ${selected}>${channel.name}</option>`;
-        });
-        formHtml += '</select><br>';
-        formHtml += '<label for="message">Message:</label>';
-        // formHtml += `<input type="text" id="message" name="message" value="${selectedMessage.text}"><br>`;
-        formHtml += `<textarea id="message" name="message" rows="10" cols="50">${selectedMessage.text}</textarea><br>`;
-        formHtml += '<label for="post_at">Post At (timestamp):</label>';
-        //TODO adjust the date and time to the timezone
-        formHtml += `<input type="datetime-local" id="post_at" name="post_at" value="${moment.unix(selectedMessage.post_at).tz(defaultTimezone).format('YYYY-MM-DDTHH:mm')}"><br>`;
-        formHtml += '<label for="timezone">Timezone:</label>';
-        formHtml += '<select name="timezone" id="timezone">';
-        timezones.forEach(timezone => {
-            const selected = timezone === defaultTimezone ? 'selected' : '';
-            formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
-        });
-        formHtml += '</select><br><br>';
-        formHtml += '<button type="submit">Schedule Message</button>';
-        formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>'; // Add cancel button
-        formHtml += '</form>';
-
-        res.send(formHtml);
-    } catch (error) {
-        console.error('Error rendering form:', error);
-        if (!res.headersSent) {
-        res.status(500).send('Error rendering form');
         }
     }
 });
