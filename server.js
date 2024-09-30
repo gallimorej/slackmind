@@ -1,7 +1,8 @@
 const express = require('express');
+const axios = require('axios');
 const path = require('path');
 require('dotenv').config();
-const { fetchChannels, fetchScheduledMessages, createScheduledMessage, deleteScheduledMessage, fetchTeamInfo } = require('./slackutils');
+const { fetchChannels, fetchScheduledMessages, createScheduledMessage, deleteScheduledMessage, fetchTeamInfo, fetchUsers, fetchUserImages, fetchImageByUrl } = require('./slackutils');
 const { getPostAtEpoch } = require('./utils');
 const moment = require('moment-timezone');
 const fs = require('fs');
@@ -226,6 +227,97 @@ app.post('/copy-scheduled-message', async (req, res) => {
         if (!res.headersSent) {
             res.status(500).send('Error copying scheduled message');
         }
+    }
+});
+
+// Serve the HTML page
+app.get('/images', async (req, res) => {
+    try {
+        // const users = await fetchUsers();
+        const users = config.imageUsers;
+
+        let userOptions = '';
+        users.forEach(user => {
+            userOptions += `<option value="${user.id}">${user.name}</option>`;
+        });
+
+        const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Retrieve Images</title>
+            </head>
+            <body>
+                <h1>Retrieve Images from Slack</h1>
+                <form action="/images" method="POST">
+                    <label for="user">Select User:</label>
+                    <select name="user" id="user">
+                        ${userOptions}
+                    </select>
+                    <button type="submit">Retrieve Images</button>
+                </form>
+                <div id="images"></div>
+            </body>
+            </html>
+        `;
+        res.send(html);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).send('Error fetching users');
+    }
+});
+
+// Handle image retrieval
+app.post('/images', async (req, res) => {
+    const userId = req.body.user;
+    try {
+      const files = await fetchUserImages(userId);
+  
+      let imagesHtml = '<h2>Retrieved Images</h2><ul>';
+      files.forEach(file => {
+        imagesHtml += `
+          <li>
+            <a href="${file.permalink}">${file.title} (${file.permalink})</a>
+          </li>
+        `;
+      });
+      imagesHtml += '</ul>';
+  
+      const users = config.imageUsers;
+      let userOptions = '';
+      users.forEach(user => {
+        userOptions += `<option value="${user.id}">${user.name}</option>`;
+      });
+  
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Retrieved Images</title>
+        </head>
+        <body>
+          <h1>Retrieve Images from Slack</h1>
+          <form action="/images" method="POST">
+            <label for="user">Select User:</label>
+            <select name="user" id="user">
+              ${userOptions}
+            </select>
+            <button type="submit">Retrieve Images</button>
+          </form>
+          <div id="images">
+            ${imagesHtml}
+          </div>
+        </body>
+        </html>
+      `;
+      res.send(html);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+      res.status(500).send('Error fetching images');
     }
 });
 

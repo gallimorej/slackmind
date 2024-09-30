@@ -1,3 +1,7 @@
 {
-  "defaultTimezone": "US/Eastern"
+  "defaultTimezone": "US/Eastern",
+  "imageUsers": [
+    {
+      "id": "UATE4LJ94", "name": "jeff.gallimore"
+    }]
 }

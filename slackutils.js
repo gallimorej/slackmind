@@ -1,6 +1,9 @@
 const { WebClient } = require('@slack/web-api');
 require('dotenv').config();
 
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
+
 const web = new WebClient(process.env.SLACK_TOKEN);
 
 async function fetchTeamInfo() {
@@ -59,10 +62,41 @@ async function deleteScheduledMessage(channel_id, message_id) {
   }
 }
 
+async function fetchUsers() {
+  try {
+    const response = await web.users.list();
+    if (!response.ok) {
+      throw new Error('Failed to fetch users');
+    }
+    return response.members;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+}
+
+async function fetchUserImages(userID) {
+  try {
+    const response = await web.files.list({
+      user: userID,
+      types: 'images'
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch images');
+    }
+    return response.files;
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    throw error;
+  }
+}
+
 module.exports = {
     fetchChannels,
     fetchTeamInfo,
     fetchScheduledMessages,
     createScheduledMessage,
-    deleteScheduledMessage
+    deleteScheduledMessage,
+    fetchUsers,
+    fetchUserImages
 };
