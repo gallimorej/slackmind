@@ -5,6 +5,7 @@ require('dotenv').config();
 const { fetchChannels, fetchScheduledMessages, createScheduledMessage, deleteScheduledMessage, fetchTeamInfo, fetchUsers, fetchUserImages, fetchImageByUrl } = require('./slackutils');
 const { getPostAtEpoch } = require('./utils');
 const moment = require('moment-timezone');
+// const fetch = require('node-fetch'); // Add this line to import node-fetch
 const fs = require('fs');
 
 const app = express();
@@ -275,15 +276,22 @@ app.post('/images', async (req, res) => {
     try {
       const files = await fetchUserImages(userId);
   
-      let imagesHtml = '<h2>Retrieved Images</h2><ul>';
+      let imagesHtml = '<h2>Retrieved Images</h2><table>';
       files.forEach(file => {
         imagesHtml += `
-          <li>
-            <a href="${file.permalink}">${file.title} (${file.permalink})</a>
-          </li>
+          <tr>
+            <td>
+              <a href="${file.permalink}" target="_blank">
+                <img src="/proxy-image?url=${encodeURIComponent(file.thumb_360)}" alt="${file.title}">
+              </a>
+            </td>
+            <td>
+              <a href="${file.permalink}" target="_blank">${file.title}</a>
+            </td>
+          </tr>
         `;
       });
-      imagesHtml += '</ul>';
+      imagesHtml += '</table>';
   
       const users = config.imageUsers;
       let userOptions = '';
@@ -300,14 +308,14 @@ app.post('/images', async (req, res) => {
           <title>Retrieved Images</title>
         </head>
         <body>
-          <h1>Retrieve Images from Slack</h1>
-          <form action="/images" method="POST">
-            <label for="user">Select User:</label>
-            <select name="user" id="user">
-              ${userOptions}
-            </select>
-            <button type="submit">Retrieve Images</button>
-          </form>
+            <h1>Retrieve Images from Slack</h1>
+            <form action="/images" method="POST">
+                <label for="user">Select User:</label>
+                <select name="user" id="user">
+                    ${userOptions}
+                </select>
+                <button type="submit">Retrieve Images</button>
+            </form>
           <div id="images">
             ${imagesHtml}
           </div>
@@ -318,6 +326,32 @@ app.post('/images', async (req, res) => {
     } catch (error) {
       console.error('Error fetching images:', error);
       res.status(500).send('Error fetching images');
+    }
+});
+
+// New route to proxy images
+app.get('/proxy-image', async (req, res) => {
+    const imageUrl = req.query.url;
+    try {
+        // Dynamically import node-fetch
+        const fetch = (await import('node-fetch')).default;
+
+        const response = await fetch(imageUrl, {
+            headers: {
+                'Authorization': `Bearer ${process.env.SLACK_TOKEN}` // Use your Slack token if needed
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch image');
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer); // Convert ArrayBuffer to Buffer
+
+        res.set('Content-Type', response.headers.get('content-type')); // Set the Content-Type header dynamically
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).send('Error fetching image');
     }
 });
 
