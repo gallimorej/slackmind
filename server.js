@@ -278,17 +278,23 @@ app.post('/images', async (req, res) => {
   
       let imagesHtml = '<h2>Retrieved Images</h2><table>';
       files.forEach(file => {
+        const imageUrl = file.permalink;
         imagesHtml += `
-          <tr>
-            <td>
-              <a href="${file.permalink}" target="_blank">
-                <img src="/proxy-image?url=${encodeURIComponent(file.thumb_360)}" alt="${file.title}">
-              </a>
-            </td>
-            <td>
-              <a href="${file.permalink}" target="_blank">${file.title}</a>
-            </td>
-          </tr>
+            <tr>
+                <td>
+                    <a href="${imageUrl}" target="_blank">
+                        <img src="/proxy-image?url=${encodeURIComponent(file.thumb_360)}" alt="${file.title}">
+                    </a>
+                </td>
+                <td>
+                    <a href="${imageUrl}" target="_blank">${file.title}</a>
+                </td>
+                <td>
+                    <button onclick="copyToClipboard('${imageUrl}')">
+                        <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
+                    </button>
+                </td>
+            </tr>
         `;
       });
       imagesHtml += '</table>';
@@ -306,6 +312,15 @@ app.post('/images', async (req, res) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Retrieved Images</title>
+          <script>
+                    function copyToClipboard(text) {
+                        navigator.clipboard.writeText(text).then(function() {
+                            alert('Link copied to clipboard');
+                        }, function(err) {
+                            console.error('Could not copy text: ', err);
+                        });
+                    }
+            </script>
         </head>
         <body>
             <h1>Retrieve Images from Slack</h1>
