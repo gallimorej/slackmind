@@ -234,7 +234,7 @@ app.post('/copy-scheduled-message', async (req, res) => {
 // Serve the HTML page
 app.get('/images', async (req, res) => {
     try {
-        // const users = await fetchUsers();
+        const team = await fetchTeamInfo();
         const users = config.imageUsers;
 
         let userOptions = '';
@@ -249,9 +249,18 @@ app.get('/images', async (req, res) => {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Retrieve Images</title>
+                <style>
+                    #workspace-info { display: flex; align-items: center; }
+                    #workspace-icon { margin-right: 10px; width: 68px; height: 68px; }
+                    button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }
+                </style>
             </head>
             <body>
-                <h1>Retrieve Images from Slack</h1>
+                <div id="workspace-info">
+                    <img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">
+                    <h1 id="workspace-name">${team.name}</h1>
+                </div>
+                <h2>Retrieve Images from Slack</h2>
                 <form action="/images" method="POST">
                     <label for="user">Select User:</label>
                     <select name="user" id="user">
@@ -315,7 +324,7 @@ app.post('/images', async (req, res) => {
           <script>
                     function copyToClipboard(text) {
                         navigator.clipboard.writeText(text).then(function() {
-                            alert('Link copied to clipboard');
+                            console.log('Link copied to clipboard');
                         }, function(err) {
                             console.error('Could not copy text: ', err);
                         });
