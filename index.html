@@ -143,7 +143,7 @@
         }
 
         async function fetchChannels() {
-          const response = await fetch('/channels');
+          const response = await fetch('/fetch-channels');
           const data = await response.json();
           const channelMap = {};
           data.forEach(channel => {

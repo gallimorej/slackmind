@@ -86,7 +86,7 @@ app.get('/config.json', (req, res) => {
 });
 
 // Define the /channels endpoint
-app.get('/channels', async (req, res) => {
+app.get('/fetch-channels', async (req, res) => {
     try {
         const channels = await fetchChannels();
         res.json(channels);
@@ -283,73 +283,82 @@ app.get('/images', async (req, res) => {
 app.post('/images', async (req, res) => {
     const userId = req.body.user;
     try {
-      const files = await fetchUserImages(userId);
+        const team = await fetchTeamInfo();
+        const files = await fetchUserImages(userId);
   
-      let imagesHtml = '<h2>Retrieved Images</h2><table>';
-      files.forEach(file => {
-        const imageUrl = file.permalink;
-        imagesHtml += `
-            <tr>
-                <td>
-                    <a href="${imageUrl}" target="_blank">
-                        <img src="/proxy-image?url=${encodeURIComponent(file.thumb_360)}" alt="${file.title}">
-                    </a>
-                </td>
-                <td>
-                    <a href="${imageUrl}" target="_blank">${file.title}</a>
-                </td>
-                <td>
-                    <button onclick="copyToClipboard('${imageUrl}')">
-                        <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
-                    </button>
-                </td>
-            </tr>
+        let imagesHtml = '<h2>Retrieved Images</h2><table>';
+        files.forEach(file => {
+            const imageUrl = file.permalink;
+            imagesHtml += `
+                <tr>
+                    <td>
+                        <a href="${imageUrl}" target="_blank">
+                            <img src="/proxy-image?url=${encodeURIComponent(file.thumb_360)}" alt="${file.title}">
+                        </a>
+                    </td>
+                    <td>
+                        <a href="${imageUrl}" target="_blank">${file.title}</a>
+                    </td>
+                    <td>
+                        <button onclick="copyToClipboard('${imageUrl}')">
+                            <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        imagesHtml += '</table>';
+    
+        const users = config.imageUsers;
+        let userOptions = '';
+        users.forEach(user => {
+            userOptions += `<option value="${user.id}">${user.name}</option>`;
+        });
+    
+        const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Retrieved Images</title>
+            <style>
+                    #workspace-info { display: flex; align-items: center; }
+                    #workspace-icon { margin-right: 10px; width: 68px; height: 68px; }
+            </style>
+            <script>
+                        function copyToClipboard(text) {
+                            navigator.clipboard.writeText(text).then(function() {
+                                console.log('Link copied to clipboard');
+                            }, function(err) {
+                                console.error('Could not copy text: ', err);
+                            });
+                        }
+                </script>
+            </head>
+            <body>
+                <div id="workspace-info">
+                    <img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">
+                    <h1 id="workspace-name">${team.name}</h1>
+                </div>
+                <h2>Retrieve Images from Slack</h2>
+                <form action="/images" method="POST">
+                    <label for="user">Select User:</label>
+                    <select name="user" id="user">
+                        ${userOptions}
+                    </select>
+                    <button type="submit">Retrieve Images</button>
+                </form>
+            <div id="images">
+                ${imagesHtml}
+            </div>
+            </body>
+            </html>
         `;
-      });
-      imagesHtml += '</table>';
-  
-      const users = config.imageUsers;
-      let userOptions = '';
-      users.forEach(user => {
-        userOptions += `<option value="${user.id}">${user.name}</option>`;
-      });
-  
-      const html = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Retrieved Images</title>
-          <script>
-                    function copyToClipboard(text) {
-                        navigator.clipboard.writeText(text).then(function() {
-                            console.log('Link copied to clipboard');
-                        }, function(err) {
-                            console.error('Could not copy text: ', err);
-                        });
-                    }
-            </script>
-        </head>
-        <body>
-            <h1>Retrieve Images from Slack</h1>
-            <form action="/images" method="POST">
-                <label for="user">Select User:</label>
-                <select name="user" id="user">
-                    ${userOptions}
-                </select>
-                <button type="submit">Retrieve Images</button>
-            </form>
-          <div id="images">
-            ${imagesHtml}
-          </div>
-        </body>
-        </html>
-      `;
-      res.send(html);
+        res.send(html);
     } catch (error) {
-      console.error('Error fetching images:', error);
-      res.status(500).send('Error fetching images');
+        console.error('Error fetching images:', error);
+        res.status(500).send('Error fetching images');
     }
 });
 
@@ -376,6 +385,77 @@ app.get('/proxy-image', async (req, res) => {
     } catch (error) {
         console.error('Error fetching image:', error);
         res.status(500).send('Error fetching image');
+    }
+});
+
+// New route to list all channels
+app.get('/channels', async (req, res) => {
+    try {
+        const team = await fetchTeamInfo();
+        const channels = await fetchChannels();
+        const sortedChannels = channels.sort((a, b) => a.name.localeCompare(b.name));
+
+        let channelsHtml = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Channels</title>
+                <style>
+                    #workspace-info { display: flex; align-items: center; }
+                    #workspace-icon { margin-right: 10px; width: 68px; height: 68px; }
+                </style>
+                <script>
+                    function copyToClipboard(text) {
+                        navigator.clipboard.writeText(text).then(function() {
+                            console.log('Link copied to clipboard');
+                        }, function(err) {
+                            console.error('Could not copy text: ', err);
+                        });
+                    }
+                </script>
+            </head>
+            <body>
+                <div id="workspace-info">
+                    <img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">
+                    <h1 id="workspace-name">${team.name}</h1>
+                </div>
+                <h2>Channels</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Channel Name</th>
+                            <th>Channel ID</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        sortedChannels.forEach(channel => {
+            channelsHtml += `
+                <tr>
+                    <td>${channel.name}</td>
+                    <td>${channel.id}</td>
+                    <td>
+                    <button onclick="copyToClipboard('<${channel.id}>')">
+                        <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
+                    </button>
+                    </td>
+                </tr>
+            `;
+        });
+        channelsHtml += `
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        res.send(channelsHtml);
+    } catch (error) {
+        console.error('Error fetching channels:', error);
+        res.status(500).send('Error fetching channels');
     }
 });
 
