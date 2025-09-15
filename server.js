@@ -40,7 +40,9 @@ function generateFormHtml(team, channels, timezones, formAction, formTitle, mess
     formHtml += `<input type="hidden" name="old_message_id" value="${message.id}">`;
     formHtml += '<label for="channel">Channel:</label>';
     formHtml += '<select name="channel" id="channel">';
-    channels.forEach(channel => {
+    // Sort channels alphabetically before displaying in dropdown
+    const sortedChannels = channels.sort((a, b) => a.name.localeCompare(b.name));
+    sortedChannels.forEach(channel => {
         const selected = message.channel_id === channel.id ? 'selected' : '';
         formHtml += `<option value="${channel.id}" ${selected}>${channel.name}</option>`;
     });
