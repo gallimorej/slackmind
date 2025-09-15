@@ -18,8 +18,23 @@ async function fetchTeamInfo() {
 
 async function fetchChannels() {
     try {
-        const result = await web.conversations.list();
-        return result.channels;
+        let allChannels = [];
+        let cursor = undefined;
+        
+        do {
+            const result = await web.conversations.list({
+                cursor: cursor,
+                limit: 200 // Maximum allowed by Slack API
+            });
+            
+            if (result.channels) {
+                allChannels = allChannels.concat(result.channels);
+            }
+            
+            cursor = result.response_metadata?.next_cursor;
+        } while (cursor);
+        
+        return allChannels;
     } catch (error) {
         console.error('Error fetching channels:', error);
         throw error;
