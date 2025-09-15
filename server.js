@@ -23,18 +23,17 @@ function generateFormHtml(team, channels, timezones, formAction, formTitle, mess
     formHtml += '<meta charset="UTF-8">';
     formHtml += '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
     formHtml += '<link rel="icon" href="/favicon.ico" type="image/x-icon">';
+    formHtml += '<link rel="stylesheet" href="/styles.css">';
     formHtml += `<title>${formTitle}</title>`;
-    formHtml += '<style>';
-    formHtml += '#workspace-info { display: flex; align-items: center; }';
-    formHtml += '#workspace-icon { margin-right: 10px; width: 68px; height: 68px; }';
-    formHtml += 'button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }';
-    formHtml += '</style>';
     formHtml += '</head>';
     formHtml += '<body>';
     formHtml += '<div id="workspace-info">';
     formHtml += `<img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">`;
     formHtml += `<h1 id="workspace-name">${team.name}</h1>`;
     formHtml += '</div>';
+    formHtml += '<a href="/">Scheduled Messages</a><br>';
+    formHtml += '<a href="/images">Images</a><br>';
+    formHtml += '<a href="/channels">Channels</a><br>';
     formHtml += `<h2>${formTitle}</h2>`;
     formHtml += `<form action="${formAction}" method="POST">`;
     formHtml += `<input type="hidden" name="old_channel_id" value="${message.channel_id}">`;
@@ -63,8 +62,8 @@ function generateFormHtml(team, channels, timezones, formAction, formTitle, mess
         formHtml += `<option value="${timezone}" ${selected}>${timezone}</option>`;
     });
     formHtml += '</select><br><br>';
-    formHtml += '<button type="submit">Submit</button>';
-    formHtml += '<button type="button" onclick="window.location.href=\'/\'">Cancel</button>';
+    formHtml += '<button class="form-button" type="submit">Submit</button>';
+    formHtml += '<button class="form-button" type="button" onclick="window.location.href=\'/\'">Cancel</button>';
     formHtml += '</form>';
     formHtml += '</body>';
     formHtml += '</html>';
@@ -248,25 +247,25 @@ app.get('/images', async (req, res) => {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Retrieve Images</title>
-                <style>
-                    #workspace-info { display: flex; align-items: center; }
-                    #workspace-icon { margin-right: 10px; width: 68px; height: 68px; }
-                    button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }
-                </style>
+                <title>Images</title>
+                <link rel="icon" href="/favicon.ico" type="image/x-icon">
+                <link rel="stylesheet" href="/styles.css">
             </head>
             <body>
                 <div id="workspace-info">
                     <img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">
                     <h1 id="workspace-name">${team.name}</h1>
                 </div>
-                <h2>Retrieve Images from Slack</h2>
+                <a href="/">Scheduled Messages</a><br>
+                <a href="/images">Images</a><br>
+                <a href="/channels">Channels</a><br>
+                <h2>Images</h2>
                 <form action="/images" method="POST">
                     <label for="user">Select User:</label>
                     <select name="user" id="user">
                         ${userOptions}
                     </select>
-                    <button type="submit">Retrieve Images</button>
+                    <button class="form-button" type="submit">Retrieve Images</button>
                 </form>
                 <div id="images"></div>
             </body>
@@ -286,11 +285,23 @@ app.post('/images', async (req, res) => {
         const team = await fetchTeamInfo();
         const files = await fetchUserImages(userId);
   
-        let imagesHtml = '<h2>Retrieved Images</h2><table>';
+        let imagesHtml = `<h3>User Images</h3><table><thead>
+                        <tr>
+                            <th>Action</th>    
+                            <th>Image</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
         files.forEach(file => {
             const imageUrl = file.permalink;
             imagesHtml += `
                 <tr>
+                    <td>
+                        <button onclick="copyToClipboard('${imageUrl}')">
+                            <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
+                        </button>
+                    </td>
                     <td>
                         <a href="${imageUrl}" target="_blank">
                             <img src="/proxy-image?url=${encodeURIComponent(file.thumb_360)}" alt="${file.title}">
@@ -299,15 +310,10 @@ app.post('/images', async (req, res) => {
                     <td>
                         <a href="${imageUrl}" target="_blank">${file.title}</a>
                     </td>
-                    <td>
-                        <button onclick="copyToClipboard('${imageUrl}')">
-                            <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
-                        </button>
-                    </td>
                 </tr>
             `;
         });
-        imagesHtml += '</table>';
+        imagesHtml += '</tbody></table>';
     
         const users = config.imageUsers;
         let userOptions = '';
@@ -321,11 +327,9 @@ app.post('/images', async (req, res) => {
             <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Retrieved Images</title>
-            <style>
-                    #workspace-info { display: flex; align-items: center; }
-                    #workspace-icon { margin-right: 10px; width: 68px; height: 68px; }
-            </style>
+            <title>Images</title>
+            <link rel="icon" href="/favicon.ico" type="image/x-icon">
+            <link rel="stylesheet" href="/styles.css">
             <script>
                         function copyToClipboard(text) {
                             navigator.clipboard.writeText(text).then(function() {
@@ -341,13 +345,16 @@ app.post('/images', async (req, res) => {
                     <img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">
                     <h1 id="workspace-name">${team.name}</h1>
                 </div>
-                <h2>Retrieve Images from Slack</h2>
+                <a href="/">Scheduled Messages</a><br>
+                <a href="/images">Images</a><br>
+                <a href="/channels">Channels</a><br>
+                <h2>Images</h2>
                 <form action="/images" method="POST">
                     <label for="user">Select User:</label>
                     <select name="user" id="user">
                         ${userOptions}
                     </select>
-                    <button type="submit">Retrieve Images</button>
+                    <button type="submit" class="form-button">Retrieve Images</button>
                 </form>
             <div id="images">
                 ${imagesHtml}
@@ -402,10 +409,8 @@ app.get('/channels', async (req, res) => {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Channels</title>
-                <style>
-                    #workspace-info { display: flex; align-items: center; }
-                    #workspace-icon { margin-right: 10px; width: 68px; height: 68px; }
-                </style>
+                <link rel="icon" href="/favicon.ico" type="image/x-icon">
+                <link rel="stylesheet" href="/styles.css">
                 <script>
                     function copyToClipboard(text) {
                         navigator.clipboard.writeText(text).then(function() {
@@ -421,13 +426,16 @@ app.get('/channels', async (req, res) => {
                     <img id="workspace-icon" src="${team.icon.image_68}" alt="Workspace Icon" style="display: inline;">
                     <h1 id="workspace-name">${team.name}</h1>
                 </div>
+                <a href="/">Scheduled Messages</a><br>
+                <a href="/images">Images</a><br>
+                <a href="/channels">Channels</a><br>
                 <h2>Channels</h2>
                 <table>
                     <thead>
                         <tr>
+                            <th>Action</th>    
                             <th>Channel Name</th>
                             <th>Channel ID</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -435,13 +443,13 @@ app.get('/channels', async (req, res) => {
         sortedChannels.forEach(channel => {
             channelsHtml += `
                 <tr>
-                    <td>${channel.name}</td>
-                    <td>${channel.id}</td>
                     <td>
-                    <button onclick="copyToClipboard('<${channel.id}>')">
+                    <button onclick="copyToClipboard('<#${channel.id}>')">
                         <img src="https://img.icons8.com/ios-glyphs/30/000000/copy.png" alt="Copy Link">
                     </button>
                     </td>
+                    <td>${channel.name}</td>
+                    <td>${channel.id}</td>
                 </tr>
             `;
         });

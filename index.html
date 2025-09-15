@@ -4,62 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles.css">
     <title>Scheduled Messages</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-            cursor: pointer; /* Add cursor pointer to indicate sortable columns */
-        }
-        th.sort-asc::after {
-            content: ' ▲';
-        }
-        th.sort-desc::after {
-            content: ' ▼';
-        }
-        th.no-sort {
-            cursor: default; /* Override cursor style for non-sortable columns */
-        }
-        .edit-icon {
-            cursor: pointer;
-            color: red;
-        }
-        .copy-icon {
-            cursor: pointer;
-            color: red;
-        }
-        .delete-icon {
-            cursor: pointer;
-            color: red;
-        }
-        #workspace-info {
-            display: flex;
-            align-items: center;
-        }
-        #workspace-icon {
-            margin-right: 10px; /* Add some space between the icon and the name */
-        }
-        .button {
-            background-color: #4CAF50; /* Green */
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
@@ -69,18 +15,20 @@
         <img id="workspace-icon" src="" alt="Workspace Icon" style="display: none; width: 68px; height: 68px;">
         <h1 id="workspace-name"></h1>
     </div>
-    <a href="/images" class="button">View Images</a>
+    <a href="/">Scheduled Messages</a><br>
+    <a href="/images">Images</a><br>
+    <a href="/channels">Channels</a><br>
     <h2>Scheduled Messages</h2>
-    <button class="button" onclick="window.location.href='/create-scheduled-message'">Create Scheduled Message</button>
+    <button class="form-button" onclick="window.location.href='/create-scheduled-message'">Create Scheduled Message</button>
     <br><br>
     <table id="scheduledMessagesTable">
         <thead>
             <tr>
+                <th class="no-sort">Action</th>
                 <th>ID</th>  
                 <th>Channel</th>
                 <th>Scheduled Time</th>
                 <th>Message</th>
-                <th class="no-sort">Action</th>
             </tr>
         </thead>
         <tbody id="messages-table-body">
@@ -168,15 +116,16 @@
                 const postAt = moment.unix(message.post_at).tz(timezone).format('YYYY-MM-DD HH:mm z');
                 
                 row.innerHTML = `
+                    <td>
+                        <span class="edit-icon" title="Edit Scheduled Message" onclick="editMessage('${message.channel_id}', '${message.id}')">📝</span>
+                        <span class="copy-icon" title="Copy Scheduled Message" onclick="copyMessage('${message.channel_id}', '${message.id}')">📋</span>
+                        <span class="delete-icon" title="Delete Scheduled Message" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span>
+                    </td>
                     <td>${message.id}</td>
                     <td>${channelName}</td>
                     <td>${postAt}</td>
                     <td>${message.text}</td>
-                    <td>
-                      <span class="edit-icon" title="Edit Scheduled Message" onclick="editMessage('${message.channel_id}', '${message.id}')">📝</span>
-                      <span class="copy-icon" title="Copy Scheduled Message" onclick="copyMessage('${message.channel_id}', '${message.id}')">📋</span>
-                      <span class="delete-icon" title="Delete Scheduled Message" onclick="deleteMessage('${message.channel_id}', '${message.id}')">🗑️</span>
-                    </td>
+                    
                 `;
                 tableBody.appendChild(row);
             });
