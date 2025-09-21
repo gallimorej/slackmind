@@ -43,8 +43,23 @@ async function fetchChannels() {
 
 async function fetchScheduledMessages() {
   try {
-    const res = await web.chat.scheduledMessages.list();
-    return res.scheduled_messages; // Return the messages
+    let allMessages = [];
+    let cursor = undefined;
+    
+    do {
+      const result = await web.chat.scheduledMessages.list({
+        cursor: cursor,
+        limit: 200 // Maximum allowed by Slack API
+      });
+      
+      if (result.scheduled_messages) {
+        allMessages = allMessages.concat(result.scheduled_messages);
+      }
+      
+      cursor = result.response_metadata?.next_cursor;
+    } while (cursor);
+    
+    return allMessages;
   } catch (error) {
     console.error('Error fetching scheduled messages:', error);
     throw error;
